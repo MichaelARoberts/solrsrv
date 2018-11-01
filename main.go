@@ -3,7 +3,7 @@ package main
 import (
 	// "errors"
 	"fmt"
-	// "github.com/vanng822/go-solr/solr"
+	"github.com/vanng822/go-solr/solr"
 	"gopkg.in/urfave/cli.v1"
 	"gopkg.in/urfave/cli.v1/altsrc"
 	"net/http"
@@ -20,6 +20,10 @@ func main() {
 			Name:  "config, c",
 			Value: "solrsrv.yaml",
 			Usage: "Load configuration from YAML `FILE`",
+		},
+		cli.BoolFlag{
+			Name:  "dryrun, d",
+			Usage: "Don't actually connect/search Solr",
 		},
 		altsrc.NewStringFlag(cli.StringFlag{
 			Name:  "solr.host",
@@ -49,11 +53,15 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
-		// si, _ := solr.NewSolrInterface(fmt.Sprintf(
-		// 	"http://%s:%d", c.String("solr.host"),
-		// 	c.Int("solr.port")),
-		// 	c.String("solr.collection"))
-		// fmt.Printf("Solr Client Instance: %v", si)
+		if c.Bool("dryrun") {
+			fmt.Println("Dry run...")
+		} else {
+			si, _ := solr.NewSolrInterface(fmt.Sprintf(
+				"http://%s:%d", c.String("solr.host"),
+				c.Int("solr.port")),
+				c.String("solr.collection"))
+			fmt.Printf("Solr Client Instance: %v", si)
+		}
 
 		http.HandleFunc("/complete", func(w http.ResponseWriter, req *http.Request) {
 			switch req.Method {
@@ -78,7 +86,7 @@ func main() {
 			}
 		})
 
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		if err := http.ListenAndServe(":80", nil); err != nil {
 			panic(err)
 		}
 
