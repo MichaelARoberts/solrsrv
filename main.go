@@ -86,8 +86,8 @@ func main() {
 						query = q[0]
 					}
 					q := solr.NewQuery()
-					q.AddParam("q", query)
-					q.AddParam("fl", "manu_autocomplete")
+					q.AddParam("q", fmt.Sprintf("manu_autocomplete:%s", query))
+					q.AddParam("fl", "manu")
 					res, err := si.Search(q).Result(nil)
 					if err != nil {
 						panic(err)
