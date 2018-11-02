@@ -37,9 +37,9 @@ func main() {
 			Usage: "set port of solr instance backing solrsrv",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
-			Name:  "solr.collection",
+			Name:  "solr.core",
 			Value: "default",
-			Usage: "set the default collection to use",
+			Usage: "set the core to use",
 		}),
 	}
 
@@ -61,9 +61,8 @@ func main() {
 			si, _ = solr.NewSolrInterface(fmt.Sprintf(
 				"http://%s:%d", c.String("solr.host"),
 				c.Int("solr.port")),
-				c.String("solr.collection"))
+				c.String("solr.core"))
 			fmt.Printf("Solr Client Instance: %v", si)
-			si.SetCore("techproducts")
 		}
 
 		http.HandleFunc("/complete", func(w http.ResponseWriter, req *http.Request) {
