@@ -67,7 +67,7 @@ func main() {
 			fmt.Println("Dry run...")
 		} else {
 			si, _ = solr.NewSolrInterface(fmt.Sprintf(
-				"http://%s:%d", c.String("solr.host"),
+				"http://%s:%d/solr", c.String("solr.host"),
 				c.Int("solr.port")),
 				c.String("solr.core"))
 			fmt.Printf("Solr Client Instance: %v", si)
