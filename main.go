@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	// "errors"
 	"fmt"
+	"github.com/rs/cors"
 	"github.com/vanng822/go-solr/solr"
 	"gopkg.in/urfave/cli.v1"
 	"gopkg.in/urfave/cli.v1/altsrc"
@@ -73,7 +74,8 @@ func main() {
 			fmt.Printf("Solr Client Instance: %v", si)
 		}
 
-		http.HandleFunc("/complete", func(w http.ResponseWriter, req *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/complete", func(w http.ResponseWriter, req *http.Request) {
 			switch req.Method {
 			case http.MethodGet:
 				if err := req.ParseForm(); err != nil {
@@ -126,8 +128,9 @@ func main() {
 				}
 			}
 		})
+		handler := cors.Default().Handler(mux)
 
-		if err := http.ListenAndServe(":80", nil); err != nil {
+		if err := http.ListenAndServe(":80", handler); err != nil {
 			panic(err)
 		}
 
