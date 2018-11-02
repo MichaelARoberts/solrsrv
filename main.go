@@ -11,6 +11,14 @@ import (
 	"os"
 )
 
+type DebugParser struct{}
+
+func (parser *DebugParser) Parse(resp *[]byte) (*solr.SolrResult, error) {
+	fmt.Printf("%v", resp)
+	srp := &solr.StandardResultParser{}
+	return srp.Parse(resp)
+}
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "solrsrv"
@@ -88,7 +96,8 @@ func main() {
 					q.AddParam("q", fmt.Sprintf("manu_autocomplete:%s", query))
 					q.AddParam("wt", "json")
 					q.AddParam("fl", "manu")
-					res, err := si.Search(q).Result(nil)
+					dbg := &DebugParser{}
+					res, err := si.Search(q).Result(dbg)
 					if err != nil {
 						panic(err)
 					}
