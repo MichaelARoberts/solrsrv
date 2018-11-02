@@ -87,6 +87,7 @@ func main() {
 					}
 					q := solr.NewQuery()
 					q.AddParam("q", fmt.Sprintf("manu_autocomplete:%s", query))
+					q.AddParam("wt", "json")
 					q.AddParam("fl", "manu")
 					res, err := si.Search(q).Result(nil)
 					if err != nil {
