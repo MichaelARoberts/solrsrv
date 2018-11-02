@@ -102,9 +102,14 @@ func main() {
 						panic(err)
 					}
 					docs := res.Results.Docs
-					results := []string{}
+					resultsMap := map[string]bool{}
 					for _, doc := range docs {
-						results = append(results, doc.Get("manu").(string))
+						// results = append(results, doc.Get("manu").(string))
+						resultsMap[doc.Get("manu").(string)] = true
+					}
+					results := []string{}
+					for res := range resultsMap {
+						results = append(results, res)
 					}
 					resJson, _ := json.Marshal(results)
 					if len, err := w.Write(resJson); err != nil {
