@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	// "errors"
 	"fmt"
 	"github.com/vanng822/go-solr/solr"
@@ -53,14 +54,16 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
+		var si *solr.SolrInterface
 		if c.Bool("dryrun") {
 			fmt.Println("Dry run...")
 		} else {
-			si, _ := solr.NewSolrInterface(fmt.Sprintf(
+			si, _ = solr.NewSolrInterface(fmt.Sprintf(
 				"http://%s:%d", c.String("solr.host"),
 				c.Int("solr.port")),
 				c.String("solr.collection"))
 			fmt.Printf("Solr Client Instance: %v", si)
+			si.SetCore("techproducts")
 		}
 
 		http.HandleFunc("/complete", func(w http.ResponseWriter, req *http.Request) {
@@ -70,12 +73,36 @@ func main() {
 					panic(err)
 				}
 				q := req.Form["q"]
-				query := ""
-				if len(q) > 0 {
-					query = q[0]
+				if c.Bool("dryrun") {
+					query := ""
+					if len(q) > 0 {
+						query = q[0]
+					}
+					// w.Write([]byte(fmt.Sprintf("req: %v\n", req)))
+					w.Write([]byte(fmt.Sprintf("Query: %s\n", query)))
+				} else {
+					query := "*"
+					if len(q) > 0 {
+						query = q[0]
+					}
+					q := solr.NewQuery()
+					q.AddParam("q", query)
+					q.AddParam("fl", "manu_autocomplete")
+					res, err := si.Search(q).Result(nil)
+					if err != nil {
+						panic(err)
+					}
+					docs := res.Results.Docs
+					results := []string{}
+					for _, doc := range docs {
+						results = append(results, doc.Get("manu").(string))
+					}
+					resJson, _ := json.Marshal(results)
+					if len, err := w.Write(resJson); err != nil {
+						fmt.Printf("resp len: %v; err: %v\n", len, err)
+					}
+
 				}
-				// w.Write([]byte(fmt.Sprintf("req: %v\n", req)))
-				w.Write([]byte(fmt.Sprintf("Query: %s\n", query)))
 			default:
 				msg := fmt.Sprintf("Invalid Method: Expecting GET, received %v\n", req.Method)
 				code := http.StatusMethodNotAllowed
