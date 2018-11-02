@@ -128,7 +128,7 @@ func main() {
 				}
 			}
 		})
-		handler := cors.Default().Handler(mux)
+		handler := cors.AllowAll().Handler(mux)
 
 		if err := http.ListenAndServe(":80", handler); err != nil {
 			panic(err)
