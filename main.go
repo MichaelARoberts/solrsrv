@@ -6,6 +6,7 @@ import (
 	"github.com/vanng822/go-solr/solr"
 	"gopkg.in/urfave/cli.v1"
 	"gopkg.in/urfave/cli.v1/altsrc"
+	"log"
 	"net/http"
 	"os"
 )
@@ -59,6 +60,7 @@ func main() {
 		_, err := altsrc.NewYamlSourceFromFlagFunc("config")(c)
 		return err
 	}
+	stderr := log.New(os.Stderr, "", 0)
 
 	app.Action = func(c *cli.Context) error {
 		var si *solr.SolrInterface
@@ -73,11 +75,11 @@ func main() {
 		}
 
 		mux := http.NewServeMux()
-		mux.HandleFunc("/complete", handleComplete(c, si))
+		mux.HandleFunc("/complete", handleComplete(c, si, stderr))
 		handler := cors.AllowAll().Handler(mux)
 
 		if err := http.ListenAndServe(":80", handler); err != nil {
-			panic(err)
+			stderr.Println(err)
 		}
 
 		return nil
@@ -85,7 +87,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		panic(err)
+		stderr.Println(err)
 	}
 
 	fmt.Println("solrsrv will now exit.")
