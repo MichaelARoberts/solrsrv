@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	// "errors"
 	"fmt"
 	"github.com/rs/cors"
 	"github.com/vanng822/go-solr/solr"
@@ -75,59 +73,7 @@ func main() {
 		}
 
 		mux := http.NewServeMux()
-		mux.HandleFunc("/complete", func(w http.ResponseWriter, req *http.Request) {
-			switch req.Method {
-			case http.MethodGet:
-				if err := req.ParseForm(); err != nil {
-					panic(err)
-				}
-				q := req.Form["q"]
-				if c.Bool("dryrun") {
-					query := ""
-					if len(q) > 0 {
-						query = q[0]
-					}
-					// w.Write([]byte(fmt.Sprintf("req: %v\n", req)))
-					w.Write([]byte(fmt.Sprintf("Query: %s\n", query)))
-				} else {
-					query := "*"
-					if len(q) > 0 {
-						query = q[0]
-					}
-					q := solr.NewQuery()
-					q.AddParam("q", fmt.Sprintf("manu_autocomplete:%s", query))
-					q.AddParam("wt", "json")
-					q.AddParam("fl", "manu")
-					dbg := &DebugParser{}
-					res, err := si.Search(q).Result(dbg)
-					if err != nil {
-						panic(err)
-					}
-					docs := res.Results.Docs
-					resultsMap := map[string]bool{}
-					for _, doc := range docs {
-						// results = append(results, doc.Get("manu").(string))
-						resultsMap[doc.Get("manu").(string)] = true
-					}
-					results := []string{}
-					for res := range resultsMap {
-						results = append(results, res)
-					}
-					resJson, _ := json.Marshal(results)
-					if len, err := w.Write(resJson); err != nil {
-						fmt.Printf("resp len: %v; err: %v\n", len, err)
-					}
-
-				}
-			default:
-				msg := fmt.Sprintf("Invalid Method: Expecting GET, received %v\n", req.Method)
-				code := http.StatusMethodNotAllowed
-				w.WriteHeader(code)
-				if len, err := w.Write([]byte(msg)); err != nil {
-					fmt.Printf("resp len: %v; err: %v\n", len, err)
-				}
-			}
-		})
+		mux.HandleFunc("/complete", handleComplete(c, si))
 		handler := cors.AllowAll().Handler(mux)
 
 		if err := http.ListenAndServe(":80", handler); err != nil {
