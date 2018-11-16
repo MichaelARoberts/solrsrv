@@ -51,9 +51,9 @@ func handleCompleteGet(w http.ResponseWriter, req *http.Request,
 		query = q[0]
 	}
 	sq := solr.NewQuery()
-	sq.AddParam("q", fmt.Sprintf("manu_autocomplete:%s", query))
+	sq.AddParam("q", fmt.Sprintf("name_ac:%s", query))
 	sq.AddParam("wt", "json")
-	sq.AddParam("fl", "manu")
+	sq.AddParam("fl", "name")
 	dbg := &DebugParser{}
 	res, err := si.Search(sq).Result(dbg)
 	if err != nil {
@@ -64,11 +64,11 @@ func handleCompleteGet(w http.ResponseWriter, req *http.Request,
 	results := []string{}
 	last := ""
 	for _, doc := range docs {
-		res := doc.Get("manu").(string)
+		res := doc.Get("name").(string)
 		if res != last {
-			results = append(results, doc.Get("manu").(string))
+			results = append(results, doc.Get("name").(string))
 		}
-		// resultsMap[doc.Get("manu").(string)] = true
+		// resultsMap[doc.Get("name").(string)] = true
 	}
 	// results := []string{}
 	// for res := range resultsMap {
