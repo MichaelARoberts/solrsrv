@@ -39,6 +39,11 @@ func main() {
 			Value: "127.0.0.1",
 			Usage: "set host of solr instance backing solrsrv",
 		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:  "addr",
+			Value: "",
+			Usage: "determine where solrsrv should listen (see http.Server.Addr for syntax)",
+		}),
 		altsrc.NewIntFlag(cli.IntFlag{
 			Name:  "solr.port",
 			Value: 8983,
@@ -78,7 +83,7 @@ func main() {
 		mux.HandleFunc("/complete", handleComplete(c, si, stderr))
 		handler := cors.AllowAll().Handler(mux)
 
-		if err := http.ListenAndServe(":80", handler); err != nil {
+		if err := http.ListenAndServe(c.String("addr"), handler); err != nil {
 			stderr.Println(err)
 		}
 
