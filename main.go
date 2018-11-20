@@ -39,6 +39,10 @@ func main() {
 			Value: "127.0.0.1",
 			Usage: "set host of solr instance backing solrsrv",
 		}),
+		altsrc.NewBoolFlag(cli.BoolFlag{
+			Name:  "solr.tls",
+			Usage: "use https to connect to solr",
+		}),
 		altsrc.NewStringFlag(cli.StringFlag{
 			Name:  "addr",
 			Value: "",
@@ -72,8 +76,12 @@ func main() {
 		if c.Bool("dryrun") {
 			fmt.Println("Dry run...")
 		} else {
+			solrFormat := "http://%s:%d/solr"
+			if c.Bool("solr.tls") {
+				solrFormat = "https://%s:%d/solr"
+			}
 			si, _ = solr.NewSolrInterface(fmt.Sprintf(
-				"http://%s:%d/solr", c.String("solr.host"),
+				solrFormat, c.String("solr.host"),
 				c.Int("solr.port")),
 				c.String("solr.core"))
 			fmt.Printf("Solr Client Instance: %v", si)
